@@ -1,8 +1,10 @@
+import { SignInButton, SignOutButton } from "@clerk/nextjs";
 
 export default function Home() {
 	return (
 		<div>
-      hello
+			<SignInButton></SignInButton>
+			<SignOutButton></SignOutButton>
 		</div>
 	);
 }

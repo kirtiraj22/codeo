@@ -5,6 +5,7 @@ import { api } from "../../../../convex/_generated/api";
 import { Blocks, Code2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { SignedIn } from "@clerk/nextjs";
+import HeaderProfileBtn from "./HeaderProfileBtn";
 
 async function Header() {
 	const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -77,7 +78,7 @@ async function Header() {
                     </SignedIn>
 
                     <div className="pl-3 border-1 border-gray-800">
-                        <div>Header profile</div>
+                        <HeaderProfileBtn />
                     </div>
 				</div>
 			</div>

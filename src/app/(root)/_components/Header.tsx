@@ -6,6 +6,7 @@ import { Blocks, Code2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { SignedIn } from "@clerk/nextjs";
 import HeaderProfileBtn from "./HeaderProfileBtn";
+import ThemeSelector from "./ThemeSelector";
 
 async function Header() {
 	const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -57,7 +58,7 @@ async function Header() {
 
 				<div className="flex items-center gap-4">
 					<div className="flex items-center gap-3">
-						<div>Theme</div>
+						<ThemeSelector />
 						<div>Language</div>
 					</div>
 

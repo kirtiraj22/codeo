@@ -60,7 +60,9 @@ async function Header() {
 				<div className="flex items-center gap-4">
 					<div className="flex items-center gap-3">
 						<ThemeSelector />
-						<LanguageSelector />
+						<LanguageSelector
+							hasAccess={Boolean(convexUser?.isPro)}
+						/>
 					</div>
 
 					{!convexUser?.isPro && (
@@ -75,13 +77,13 @@ async function Header() {
 						</Link>
 					)}
 
-                    <SignedIn>
-                        <div>Run</div>
-                    </SignedIn>
+					<SignedIn>
+						<div>Run</div>
+					</SignedIn>
 
-                    <div className="pl-3 border-1 border-gray-800">
-                        <HeaderProfileBtn />
-                    </div>
+					<div className="pl-3 border-1 border-gray-800">
+						<HeaderProfileBtn />
+					</div>
 				</div>
 			</div>
 		</div>

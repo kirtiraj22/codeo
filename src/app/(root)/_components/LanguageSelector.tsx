@@ -13,7 +13,6 @@ function LanguageSelector({ hasAccess }: { hasAccess: boolean }) {
 
 	const mounted = useMounted();
 	const { language, setLanguage } = useCodeEditorStore();
-
 	const dropdownRef = useRef<HTMLDivElement>(null);
 	const currentLanguageObj = LANGUAGE_CONFIG[language];
 
@@ -25,12 +24,10 @@ function LanguageSelector({ hasAccess }: { hasAccess: boolean }) {
 			) {
 				setIsOpen(false);
 			}
-
-			document.addEventListener("mousedown", handleClickOutside);
-
-			return () =>
-				document.removeEventListener("mousedown", handleClickOutside);
 		};
+		document.addEventListener("mousedown", handleClickOutside);
+		return () =>
+			document.removeEventListener("mousedown", handleClickOutside);
 	}, []);
 
 	const handleLanguageSelect = (langId: string) => {
@@ -73,32 +70,33 @@ function LanguageSelector({ hasAccess }: { hasAccess: boolean }) {
 
 			<AnimatePresence>
 				{isOpen && (
-					<motion.div 
+					<motion.div
 						initial={{
-							opacity: 0, 
-							y: 8, 
-							scale: 0.96
-						}}
-						animate={{ 
-							opacity: 1,
-							y: 0, 
-							scale: 0.96,
-						}}
-						exit={{ 
 							opacity: 0,
 							y: 8,
-							scale: 0.96
+							scale: 0.96,
+						}}
+						animate={{
+							opacity: 1,
+							y: 0,
+							scale: 0.96,
+						}}
+						exit={{
+							opacity: 0,
+							y: 8,
+							scale: 0.96,
 						}}
 						transition={{
-							duration: 0.2
+							duration: 0.2,
 						}}
-					className="absolute top-full left-0 mt-2 w-64 bg-[#1e1e2e]/95 backdrop-blur-xl rounded-xl border border-[#313244] shadow-2xl py-2 z-50">
+						className="absolute top-full left-0 mt-2 w-64 bg-[#1e1e2e]/95 backdrop-blur-xl rounded-xl border border-[#313244] shadow-2xl py-2 z-50"
+					>
 						<div className="px-3 pb-2 mb-2 border-b border-gray-800/50">
 							<p className="text-xs font-medium text-gray-400">
 								Select Language
 							</p>
 						</div>
-						<div className="max-h-[280px] overflow-y-auto overflow-x-hidden">
+						<div className="max-h-[280px] overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-800 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-300/40">
 							{Object.values(LANGUAGE_CONFIG).map(
 								(lang, index) => {
 									const isLocked =
@@ -107,14 +105,18 @@ function LanguageSelector({ hasAccess }: { hasAccess: boolean }) {
 									return (
 										<motion.div
 											key={lang.id}
-											initial={{ opacity: 0}}
-											animate={{ opacity: 1}}
-											transition={{delay: index * 0.1}}
+											initial={{ opacity: 0 }}
+											animate={{ opacity: 1 }}
+											transition={{ delay: index * 0.1 }}
 											className="relative group px-2"
 										>
 											<button
 												className={`relative w-full flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all duration-200 ${language === lang.id ? "bg-blue-500/10 text-blue-400" : "text-gray-300"} ${isLocked ? "opacity-50" : "hover:bg-[#262637"}`}
-												onClick={() => handleLanguageSelect(lang.id)}
+												onClick={() =>
+													handleLanguageSelect(
+														lang.id
+													)
+												}
 												disabled={isLocked}
 											>
 												<div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -134,12 +136,13 @@ function LanguageSelector({ hasAccess }: { hasAccess: boolean }) {
 													{lang.label}
 												</span>
 												{language === lang.id && (
-													<motion.div className="absolute inset-0 border-2 border-blue-500/30 rounded-lg" 
-													transition={{
-														type: "spring",
-														bounce: 0.2,
-														duration: 0.6
-													}}
+													<motion.div
+														className="absolute inset-0 border-2 border-blue-500/30 rounded-lg"
+														transition={{
+															type: "spring",
+															bounce: 0.2,
+															duration: 0.6,
+														}}
 													/>
 												)}
 

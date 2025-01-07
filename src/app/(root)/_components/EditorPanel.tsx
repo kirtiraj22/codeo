@@ -8,8 +8,8 @@ import { motion } from "framer-motion";
 import { useClerk } from "@clerk/nextjs";
 import { Editor } from "@monaco-editor/react";
 import { defineMonacoThemes, LANGUAGE_CONFIG } from "../_constants";
-import useMounted from "@/hooks/useMounted";
-import EditorPanelSkeleton from "./EditorPanelSkeleton";
+import useMounted from "@/hooks/useMounted"
+import { EditorPanelSkeleton } from "./EditorPanelSkeleton";
 
 function EditorPanel() {
 	const clerk = useClerk();
@@ -51,7 +51,6 @@ function EditorPanel() {
 
 	return (
 		<div className="relative">
-      <EditorPanelSkeleton />
 			<div className="relative bg-[#121212a]/90 backdrop-blur rounded-xl border border-white/[0.05] p-6">
 				<div className="flex items-center justify-between mb-4">
 					<div className="flex items-center gap-3">
@@ -147,7 +146,7 @@ function EditorPanel() {
 							}}
 						/>
 					)}
-          {/* {!clerk.loaded && <EditorPanelSkeleton />} */}
+          {!clerk.loaded && <EditorPanelSkeleton />}
 				</div>
 			</div>
       {isShareDialogOpen && <div>Share Dialog</div>}

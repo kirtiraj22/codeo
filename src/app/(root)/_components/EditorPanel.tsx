@@ -5,11 +5,30 @@ import Image from "next/image";
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useClerk } from "@clerk/nextjs";
+import { Editor } from "@monaco-editor/react";
+import { defineMonacoThemes, LANGUAGE_CONFIG } from "../_constants";
+import useMounted from "@/hooks/useMounted";
 
 function EditorPanel() {
+	const clerk = useClerk();
+	const mounted = useMounted();
+
 	const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 	const { language, theme, fontSize, editor, setFontSize, setEditor } =
 		useCodeEditorStore();
+
+	useEffect(() => {
+		const savedCode = localStorage.getItem(`editor-code-${language}`);
+		const newCode = savedCode || LANGUAGE_CONFIG[language].defaultCode;
+
+		if (editor) editor.setValue(newCode);
+	}, [language, editor]);
+
+	useEffect(() => {
+		const savedFontSize = localStorage.getItem("editor-font-size");
+		if (savedFontSize) setFontSize(parseInt(savedFontSize));
+	}, [setFontSize]);
 
 	const handleFontSizeChange = (newSize: number) => {
 		const size = Math.min(Math.max(newSize, 12), 24);
@@ -17,10 +36,22 @@ function EditorPanel() {
 		localStorage.setItem("editor-font-size", size.toString());
 	};
 
+	const handleRefresh = () => {
+		const defaultCode = LANGUAGE_CONFIG[language].defaultCode;
+		if (editor) editor.setValue(defaultCode);
+		localStorage.removeItem(`editor-code-${language}`);
+	};
+
+	const handleEditorChange = (value: string | undefined) => {
+		if (value) localStorage.setItem(`editor-code-${language}`, value);
+	};
+
+	if (!mounted) return null;
+
 	return (
 		<div className="relative">
 			<div className="relative bg-[#121212a]/90 backdrop-blur rounded-xl border border-white/[0.05] p-6">
-				<div className="flex items-center justify-between mb-4 border border-cyan-400">
+				<div className="flex items-center justify-between mb-4">
 					<div className="flex items-center gap-3">
 						<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#1e1e2e] ring-1 ring-white/5">
 							<Image
@@ -39,7 +70,7 @@ function EditorPanel() {
 							</p>
 						</div>
 					</div>
-					<div className="flex items-center gap-3 border border-red-400">
+					<div className="flex items-center gap-3">
 						<div className="flex items-center gap-3 px-3 py-2 bg-[#1e1e2e] rounded-lg ring-1 ring-white/5">
 							<TypeIcon className="size-4 text-gray-400" />
 							<div className="flex items-center gap-3">
@@ -65,6 +96,7 @@ function EditorPanel() {
 							whileTap={{ scale: 0.95 }}
 							className="p-2 bg-[#1e1e2e] hover:bg-[#2a2a3a] rounded-lg ring-1 ring-white/5 transition-colors"
 							aria-label="Reset to default code"
+							onClick={handleRefresh}
 						>
 							<RotateCcwIcon className="size-4 text-gray-400" />
 						</motion.button>
@@ -72,6 +104,7 @@ function EditorPanel() {
 							whileHover={{ scale: 1.02 }}
 							whileTap={{ scale: 0.98 }}
 							className="inline-flex items-center gap-2 px-4 py-2 rounded-lg overflow-hidden bg-gradient-to-r from-blue-500 to-blue-600 opacity-90 hover:opacity-100 transition-opacity"
+							onClick={() => setIsShareDialogOpen(true)}
 						>
 							<ShareIcon className="size-4 text-white" />
 							<span className="text-sm font-medium text-white">
@@ -80,7 +113,42 @@ function EditorPanel() {
 						</motion.button>
 					</div>
 				</div>
+				<div className="relative group rounded-xl overflow-hidden ring-1 ring-white/[0.05]">
+					{clerk.loaded && (
+						<Editor
+							height="600px"
+							language={LANGUAGE_CONFIG[language].monacoLanguage}
+							onChange={handleEditorChange}
+							theme={theme}
+							beforeMount={defineMonacoThemes}
+							onMount={(editor) => setEditor(editor)}
+							options={{
+								fontSize,
+								minimap: { enabled: true },
+								automaticLayout: true,
+								scrollBeyondLastLine: false,
+								padding: { top: 16, bottom: 16 },
+								renderWhitespace: "selection",
+								fontFamily: `"Fira Code", "Cascadia Code", Consolas, monospace`,
+								fontLigatures: true,
+								cursorBlinking: "smooth",
+								smoothScrolling: true,
+								contextmenu: true,
+								renderLineHighlight: "all",
+								lineHeight: 1.6,
+								letterSpacing: 0.5,
+								roundedSelection: true,
+								scrollbar: {
+									verticalScrollbarSize: 8,
+									horizontalScrollbarSize: 8,
+								},
+							}}
+						/>
+					)}
+          {!clerk.loaded && <div>Editor skeleton</div>}
+				</div>
 			</div>
+      {isShareDialogOpen && <div>Share Dialog</div>}
 		</div>
 	);
 }

@@ -1,131 +1,186 @@
-import { LANGUAGE_CONFIG } from "@/app/(root)/_constants"
-import { CodeEditorState } from "@/types"
-import { Monaco } from "@monaco-editor/react"
-import { create } from "zustand"
+import { LANGUAGE_CONFIG } from "@/app/(root)/_constants";
+import { CodeEditorState } from "@/types";
+import { Monaco } from "@monaco-editor/react";
+import { create } from "zustand";
 
 const getInitialState = () => {
-    // if we are on the server 
-    if(typeof window === "undefined"){
-        return {
-            language: "javascript",
-            fontSize: 16,
-            theme: "vs-dark"
-        }
-    }
+	// if we are on the server
+	if (typeof window === "undefined") {
+		return {
+			language: "javascript",
+			fontSize: 16,
+			theme: "vs-dark",
+		};
+	}
 
-    // if we are on the client
-    const savedLanguage = localStorage.getItem("editor-language") || "javascript"
-    const savedTheme = localStorage.getItem("editor-theme") || "vs-dark";
-    const savedFontSize = localStorage.getItem("editor-font-size") || 16;
+	// if we are on the client
+	const savedLanguage =
+		localStorage.getItem("editor-language") || "javascript";
+	const savedTheme = localStorage.getItem("editor-theme") || "vs-dark";
+	const savedFontSize = localStorage.getItem("editor-font-size") || 16;
 
-    return {
-        language: savedLanguage,
-        theme: savedTheme,
-        fontSize: Number(savedFontSize)
-    }
-}
+	return {
+		language: savedLanguage,
+		theme: savedTheme,
+		fontSize: Number(savedFontSize),
+	};
+};
 
 export const useCodeEditorStore = create<CodeEditorState>((set, get) => {
-    const initialState = getInitialState();
-    
-    return{
-        ...initialState,
-        output: "",
-        isRunning: false,
-        error: null,
-        editor: null,
-        executionResult: null,
+	const initialState = getInitialState();
 
-        getCode: () => get().editor?.getValue() || "",
+	return {
+		...initialState,
+		output: "",
+		isRunning: false,
+		error: null,
+		editor: null,
+		executionResult: null,
 
-        setEditor: (editor: Monaco) => {
-            const savedCode = localStorage.getItem(`editor-code-${get().language}`);
-            if(savedCode){
-                editor.setValue(savedCode)
-            }
+		getCode: () => get().editor?.getValue() || "",
 
-            set({ editor });
-        },
+		setEditor: (editor: Monaco) => {
+			const savedCode = localStorage.getItem(
+				`editor-code-${get().language}`
+			);
+			if (savedCode) {
+				editor.setValue(savedCode);
+			}
 
-        setTheme: (theme: string) => {
-            localStorage.setItem("editor-theme", theme);
-            set({ theme })
-        },
+			set({ editor });
+		},
 
-        setFontSize: (fontSize: number) => {
-            localStorage.setItem("editor-font-size", fontSize.toString());
-            set({ fontSize })
-        },
+		setTheme: (theme: string) => {
+			localStorage.setItem("editor-theme", theme);
+			set({ theme });
+		},
 
-        setLanguage: (language: string) => {
-            const currentCode = get().editor?.getValue();
-            if(currentCode){
-                localStorage.setItem(`editor-code-${get().language}`, currentCode)
-            }
+		setFontSize: (fontSize: number) => {
+			localStorage.setItem("editor-font-size", fontSize.toString());
+			set({ fontSize });
+		},
 
-            localStorage.setItem("editor-language", language);
+		setLanguage: (language: string) => {
+			const currentCode = get().editor?.getValue();
+			if (currentCode) {
+				localStorage.setItem(
+					`editor-code-${get().language}`,
+					currentCode
+				);
+			}
 
-            set({
-                language,
-                output: "",
-                error: null
-            })
-        },
+			localStorage.setItem("editor-language", language);
 
-        runCode: async () => {
-            console.log("Run code!")
-            const { language, getCode } = get();
-            const code = getCode();
-            if(!code){
-                set({
-                    error: "Please enter some code!"
-                })
-                return;
-            }
+			set({
+				language,
+				output: "",
+				error: null,
+			});
+		},
 
-            set({ isRunning: true, error: null, output: ""})
+		runCode: async () => {
+			console.log("Run code!");
+			const { language, getCode } = get();
+			const code = getCode();
+			if (!code) {
+				set({
+					error: "Please enter some code!",
+				});
+				return;
+			}
 
-            try{
-                const runtime = LANGUAGE_CONFIG[language].pistonRuntime
-                // call piston api
-                const response = await fetch("https://emkc.org/api/v2/piston/execute", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        language: runtime.language,
-                        version: runtime.version,
-                        files: [{ content: code }]
-                    })
-                })
+			set({ isRunning: true, error: null, output: "" });
 
-                const data = await response.json();
-                console.log("Data from piston : ", data);
-                console.log("message: ", data.message)
-                // if error in api
-                if(data.message){
-                    set({
-                        error: data.message,
-                        executionResult: {
-                            code,
-                            output: "",
-                            error: data.message
-                        }
-                    })
+			try {
+				const runtime = LANGUAGE_CONFIG[language].pistonRuntime;
+				// call piston api
+				const response = await fetch(
+					"https://emkc.org/api/v2/piston/execute",
+					{
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+							language: runtime.language,
+							version: runtime.version,
+							files: [{ content: code }],
+						}),
+					}
+				);
 
-                    return;
-                }
+				const data = await response.json();
+				console.log("Data from piston : ", data);
+				console.log("message: ", data.message);
+				// if error in api
+				if (data.message) {
+					set({
+						error: data.message,
+						executionResult: {
+							code,
+							output: "",
+							error: data.message,
+						},
+					});
 
-                
+					return;
+				}
+				// compilation error(compile time error)
+				if (data.compile && data.compile.code !== 0) {
+					const error = data.compile.stderr || data.compile.output;
+					set({
+						error,
+						executionResult: {
+							code,
+							output: "",
+							error,
+						},
+					});
+					return;
+				}
 
-            }catch(err){
-                console.log("err",err)
-            }finally{
-                set({
-                    isRunning: false
-                })
-            }
-        }
-    }
-})
+				// run time error
+				if (data.run && data.run.code !== 0) {
+					const error = data.run.stderr || data.run.output;
+					set({
+						error,
+						executionResult: {
+							code,
+							output: "",
+							error,
+						},
+					});
+
+					return;
+				}
+
+				// successful execution
+				const output = data.run.output;
+
+				set({
+					output: output.trim(),
+					error: null,
+					executionResult: {
+						code,
+						output: output.trim(),
+						error: null,
+					},
+				});
+			} catch (err) {
+				console.log("error running code", err);
+				set({
+					error: "Error running code",
+					executionResult: {
+						code,
+						output: "",
+						error: "Error running code",
+					},
+				});
+			} finally {
+				set({
+					isRunning: false,
+				});
+			}
+		},
+	};
+});

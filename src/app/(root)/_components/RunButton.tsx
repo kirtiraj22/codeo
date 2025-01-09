@@ -5,10 +5,17 @@ import { useCodeEditorStore } from "@/store/useCodeEditorStore";
 import { Loader2, Play } from "lucide-react";
 
 function RunButton() {
-	const { language, isRunning } = useCodeEditorStore();
+	const { runCode, language, isRunning } = useCodeEditorStore();
+	
+	const handleRun = async () => {
+		console.log("Running")
+		await runCode();
+		console.log("Done")
+	}
+
 	return (
 		<motion.button
-			// onClick={handleRun}
+			onClick={handleRun}
 			disabled={isRunning}
 			whileHover={{ scale: 1.02 }}
 			whileTap={{ scale: 0.98 }}

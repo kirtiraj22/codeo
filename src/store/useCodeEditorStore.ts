@@ -1,3 +1,4 @@
+import { LANGUAGE_CONFIG } from "@/app/(root)/_constants"
 import { CodeEditorState } from "@/types"
 import { Monaco } from "@monaco-editor/react"
 import { create } from "zustand"
@@ -72,7 +73,59 @@ export const useCodeEditorStore = create<CodeEditorState>((set, get) => {
         },
 
         runCode: async () => {
-            // logic to run code
+            console.log("Run code!")
+            const { language, getCode } = get();
+            const code = getCode();
+            if(!code){
+                set({
+                    error: "Please enter some code!"
+                })
+                return;
+            }
+
+            set({ isRunning: true, error: null, output: ""})
+
+            try{
+                const runtime = LANGUAGE_CONFIG[language].pistonRuntime
+                // call piston api
+                const response = await fetch("https://emkc.org/api/v2/piston/execute", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        language: runtime.language,
+                        version: runtime.version,
+                        files: [{ content: code }]
+                    })
+                })
+
+                const data = await response.json();
+                console.log("Data from piston : ", data);
+                console.log("message: ", data.message)
+                // if error in api
+                if(data.message){
+                    set({
+                        error: data.message,
+                        executionResult: {
+                            code,
+                            output: "",
+                            error: data.message
+                        }
+                    })
+
+                    return;
+                }
+
+                
+
+            }catch(err){
+                console.log("err",err)
+            }finally{
+                set({
+                    isRunning: false
+                })
+            }
         }
     }
 })

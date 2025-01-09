@@ -4,12 +4,13 @@ import { RotateCcwIcon, ShareIcon, TypeIcon } from "lucide-react";
 import Image from "next/image";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useClerk } from "@clerk/nextjs";
 import { Editor } from "@monaco-editor/react";
 import { defineMonacoThemes, LANGUAGE_CONFIG } from "../_constants";
-import useMounted from "@/hooks/useMounted"
+import useMounted from "@/hooks/useMounted";
 import { EditorPanelSkeleton } from "./EditorPanelSkeleton";
+import ShareSnippetDialog from "./ShareSnippetDialog";
 
 function EditorPanel() {
 	const clerk = useClerk();
@@ -146,10 +147,16 @@ function EditorPanel() {
 							}}
 						/>
 					)}
-          {!clerk.loaded && <EditorPanelSkeleton />}
+					{!clerk.loaded && <EditorPanelSkeleton />}
 				</div>
 			</div>
-      {isShareDialogOpen && <div>Share Dialog</div>}
+			<AnimatePresence>
+				{isShareDialogOpen && (
+					<ShareSnippetDialog
+						onClose={() => setIsShareDialogOpen(false)}
+					/>
+				)}
+			</AnimatePresence>
 		</div>
 	);
 }

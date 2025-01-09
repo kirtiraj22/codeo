@@ -4,16 +4,36 @@ import { useCodeEditorStore } from "@/store/useCodeEditorStore";
 import { X } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { createSnippet } from "../../../../convex/snippets";
+import { useMutation } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
 
 function ShareSnippetDialog({ onClose }: { onClose: () => void }) {
 	const [title, setTitle] = useState("");
 	const [isSharing, setIsSharing] = useState(false);
 	const { language, getCode } = useCodeEditorStore();
+	const createSnippet = useMutation(api.snippets.createSnippet);
 
 	const handleShare = async (e: React.FormEvent) => {
 		e.preventDefault();
 
 		setIsSharing(true);
+
+		try {
+			const code = getCode();
+			await createSnippet({
+				title,
+				language,
+				code,
+			});
+
+			onClose();
+			setTitle("");
+		} catch (err) {
+			console.log("Error creating snippet: ", err);
+		} finally {
+			setIsSharing(false);
+		}
 	};
 
 	return (

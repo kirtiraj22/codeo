@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { createSnippet } from "../../../../convex/snippets";
 import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
+import toast from "react-hot-toast";
 
 function ShareSnippetDialog({ onClose }: { onClose: () => void }) {
 	const [title, setTitle] = useState("");
@@ -29,8 +30,10 @@ function ShareSnippetDialog({ onClose }: { onClose: () => void }) {
 
 			onClose();
 			setTitle("");
+			toast.success("Snippet shared successfully");
 		} catch (err) {
 			console.log("Error creating snippet: ", err);
+			toast.error("Error creating snippet");
 		} finally {
 			setIsSharing(false);
 		}

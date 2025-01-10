@@ -10,7 +10,7 @@ export const createSnippet = mutation({
 	handler: async (ctx, args) => {
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity) throw new Error("Not authorized");
-		
+
 		const user = await ctx.db
 			.query("users")
 			.withIndex("by_user_id")
@@ -28,5 +28,13 @@ export const createSnippet = mutation({
 		});
 
 		return snippetId;
+	},
+});
+
+export const getSnippets = query({
+	handler: async (ctx) => {
+		const snippets = await ctx.db.query("snippets").order("desc").collect();
+
+		return snippets;
 	},
 });

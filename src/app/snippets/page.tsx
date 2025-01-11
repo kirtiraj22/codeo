@@ -1,11 +1,32 @@
 "use client";
-
-import { BookOpen, Search, Tag } from "lucide-react";
 import NavigationHeader from "../../components/NavigationHeader";
 import SnippetsPageSkeleton from "./_components/SnippetsPageSkeleton";
+import { api } from "../../../convex/_generated/api";
+
+import { useState } from "react";
+import { BookOpen, Grid, Layers, Search, Tag, X } from "lucide-react";
 import { motion } from "framer-motion";
+import { useQuery } from "convex/react";
+import Image from "next/image";
 
 function SnippetsPage() {
+	const snippets = useQuery(api.snippets.getSnippets);
+	const [selectedLanguage, setSelectedLanguage] = useState<string | null>(
+		null
+	);
+
+	if (snippets === undefined) {
+		return (
+			<div className="min-h-screen">
+				<NavigationHeader />
+				<SnippetsPageSkeleton />
+			</div>
+		);
+	}
+
+	const languages = [...new Set(snippets.map((s) => s.language))];
+	const popularLanguages = languages.slice(0, 5);
+
 	return (
 		<div className="min-h-screen bg-[#0a0a0f]">
 			<NavigationHeader />
@@ -40,9 +61,9 @@ function SnippetsPage() {
 
 				<div>
 					<div className="relative group">
-						<div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur-xl transition-all duration-500 opacity-0 group-hover:opacity-100"/>
+						<div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur-xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
 						<div className="relative flex items-center">
-							<Search className="absolute left-4 w-5 h-5 text-gray-400"/>
+							<Search className="absolute left-4 w-5 h-5 text-gray-400" />
 							<input
 								type="text"
 								placeholder="Search snippets by title, language, or author..."
@@ -51,12 +72,63 @@ function SnippetsPage() {
 						</div>
 					</div>
 
-                    <div className="flex flex-wrap items-center gap-4">
-                        <div className="flex items-center gap-2 px-4 py-2 bg-[#1e1e2e] rounded-lg ring-1 ring-gray-800">
-                            <Tag className="w-4 h-4 text-gray-400"/>
-                            <span className="text-sm text-gray-400">Languages: </span>
-                        </div>
-                    </div>
+					<div className="flex flex-wrap items-center gap-4">
+						<div className="flex items-center gap-2 px-4 py-2 bg-[#1e1e2e] rounded-lg ring-1 ring-gray-800">
+							<Tag className="w-4 h-4 text-gray-400" />
+							<span className="text-sm text-gray-400">
+								Languages:{" "}
+							</span>
+						</div>
+						{popularLanguages.map((lang) => (
+							<button
+								key={lang}
+								onClick={() =>
+									setSelectedLanguage(
+										lang === selectedLanguage ? null : lang
+									)
+								}
+								className={`group relative px-3 py-1.5 rounded-lg transition-all duration-200 ${selectedLanguage === lang ? "text-blue-400 bg-blue-500/10 ring-2 ring-blue-500/50" : "text-gray-400 hover:text-gray-300 bg-[#1e1e2e] hover:bg-[#262637] ring-1 ring-gray-800"}`}
+							>
+								<div className="flex items-center gap-2">
+									<Image
+										width={20}
+										height={20}
+										src={`/${lang}.png`}
+										alt={lang}
+										className="w-4 h-4 object-contain"
+									/>
+									<span className="text-sm">{lang}</span>
+								</div>
+							</button>
+						))}
+						{selectedLanguage && (
+							<button
+								onClick={() => setSelectedLanguage(null)}
+								className="flex items-center gap-1 px-2 py-1 text-xs text-gray-400 hover:text-gray-300 transition-colors"
+							>
+								<X className="w-3 h-3" />
+								Clear
+							</button>
+						)}
+
+						<div className="ml-auto flex items-center gap-3">
+							<span className="text-sm text-gray-500">
+								5 snippets found
+							</span>
+							<div className="flex items-center gap-1 p-1 bg-[#1e1e2e] rounded-lg ring-1 ring-gray-800">
+								<button
+									className={`p-2 rounded-md transition-all ${true ? "bg-blue-500/20 text-blue-400" : "text-gray-400 hover:text-gray-300 hover:bg-[#262637]"}`}
+								>
+									<Grid className="w-4 h-4" />
+								</button>
+								<button
+									className={`p-2 rounded-md transition-all ${true ? "bg-blue-500/20 text-blue-400" : "text-gray-400 hover:text-gray-300 hover:bg-[#262637]"}`}
+								>
+									<Layers className="w-4 h-4" />
+								</button>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

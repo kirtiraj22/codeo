@@ -5,12 +5,14 @@ import { api } from "../../../convex/_generated/api";
 
 import { useState } from "react";
 import { BookOpen, Grid, Layers, Search, Tag, X } from "lucide-react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useQuery } from "convex/react";
 import Image from "next/image";
 
 function SnippetsPage() {
 	const snippets = useQuery(api.snippets.getSnippets);
+	const [searchQuery, setSearchQuery] = useState("");
+	const [view, setView] = useState<"grid" | "list">("grid");
 	const [selectedLanguage, setSelectedLanguage] = useState<string | null>(
 		null
 	);
@@ -26,6 +28,22 @@ function SnippetsPage() {
 
 	const languages = [...new Set(snippets.map((s) => s.language))];
 	const popularLanguages = languages.slice(0, 5);
+
+	const filteredSnippets = snippets.filter((snippet) => {
+		// search by title, language or username
+		const matchesSearch =
+			snippet.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+			snippet.language
+				.toLowerCase()
+				.includes(searchQuery.toLowerCase()) ||
+			snippet.userName.toLowerCase().includes(searchQuery.toLowerCase());
+
+		const matchesLanguage =
+			!selectedLanguage || snippet.language === selectedLanguage;
+
+		// snippet should have the selected language and the search query
+		return matchesSearch && matchesLanguage;
+	});
 
 	return (
 		<div className="min-h-screen bg-[#0a0a0f]">
@@ -59,7 +77,7 @@ function SnippetsPage() {
 					</motion.p>
 				</div>
 
-				<div>
+				<div className="relative max-w-5xl mx-auto space-y-6 mb-12">
 					<div className="relative group">
 						<div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur-xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
 						<div className="relative flex items-center">
@@ -113,16 +131,18 @@ function SnippetsPage() {
 
 						<div className="ml-auto flex items-center gap-3">
 							<span className="text-sm text-gray-500">
-								5 snippets found
+								{filteredSnippets.length} snippets found
 							</span>
 							<div className="flex items-center gap-1 p-1 bg-[#1e1e2e] rounded-lg ring-1 ring-gray-800">
 								<button
-									className={`p-2 rounded-md transition-all ${true ? "bg-blue-500/20 text-blue-400" : "text-gray-400 hover:text-gray-300 hover:bg-[#262637]"}`}
+									onClick={() => setView("grid")}
+									className={`p-2 rounded-md transition-all ${view === "grid" ? "bg-blue-500/20 text-blue-400" : "text-gray-400 hover:text-gray-300 hover:bg-[#262637]"}`}
 								>
 									<Grid className="w-4 h-4" />
 								</button>
 								<button
-									className={`p-2 rounded-md transition-all ${true ? "bg-blue-500/20 text-blue-400" : "text-gray-400 hover:text-gray-300 hover:bg-[#262637]"}`}
+									onClick={() => setView("list")}
+									className={`p-2 rounded-md transition-all ${view === "list" ? "bg-blue-500/20 text-blue-400" : "text-gray-400 hover:text-gray-300 hover:bg-[#262637]"}`}
 								>
 									<Layers className="w-4 h-4" />
 								</button>
@@ -130,6 +150,14 @@ function SnippetsPage() {
 						</div>
 					</div>
 				</div>
+
+				<motion.div>
+					<AnimatePresence>
+						{filteredSnippets.map((snippet) => (
+							<div key={snippet._id}>{snippet.title}</div>
+						))}
+					</AnimatePresence>
+				</motion.div>
 			</div>
 		</div>
 	);

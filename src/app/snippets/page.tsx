@@ -8,6 +8,7 @@ import { BookOpen, Grid, Layers, Search, Tag, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useQuery } from "convex/react";
 import Image from "next/image";
+import SnippetCard from "./_components/SnippetCard";
 
 function SnippetsPage() {
 	const snippets = useQuery(api.snippets.getSnippets);
@@ -152,9 +153,9 @@ function SnippetsPage() {
 				</div>
 
 				<motion.div>
-					<AnimatePresence>
+					<AnimatePresence mode="popLayout">
 						{filteredSnippets.map((snippet) => (
-							<div key={snippet._id}>{snippet.title}</div>
+							<SnippetCard key={snippet._id} snippet={snippet}/>
 						))}
 					</AnimatePresence>
 				</motion.div>

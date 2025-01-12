@@ -83,8 +83,22 @@ export const isSnippetStarred = query({
 				(q) =>
 					q.eq(q.field("userId"), identity.subject) &&
 					q.eq(q.field("snippetId"), args.snippetId)
-			);
+			)
+			.first();
 
 		return !!star;
+	},
+});
+
+export const getSnippetStarCount = query({
+	args: { snippetId: v.id("snippets") },
+	handler: async (ctx, args) => {
+		const stars = await ctx.db
+			.query("stars")
+			.withIndex("by_snippet_id")
+			.filter((q) => q.eq(q.field("snippetId"), args.snippetId))
+			.collect();
+
+		return stars.length;
 	},
 });

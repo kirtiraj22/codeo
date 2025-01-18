@@ -8,6 +8,7 @@ import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
 import toast from "react-hot-toast";
+import Comment from "./Comment";
 
 function Comments({ snippetId }: { snippetId: Id<"snippets"> }) {
 	const { user } = useUser();
@@ -20,19 +21,33 @@ function Comments({ snippetId }: { snippetId: Id<"snippets"> }) {
 	const addComment = useMutation(api.snippets.addComment);
 	const deleteComment = useMutation(api.snippets.deleteComment);
 
-    const handleSubmitComment = async (content: string) => {
-        setIsSubmitting(true);
+	const handleSubmitComment = async (content: string) => {
+		setIsSubmitting(true);
 
-        try{
-            await addComment({ snippetId, content})
-            toast.success("Comment added successfully!")
-        }catch(err){
-            console.log("Error adding comment: ", err)
-            toast.error("Something went wrong")
-        }finally{
-            setIsSubmitting(false)
-        }
-    }
+		try {
+			await addComment({ snippetId, content });
+			toast.success("Comment added successfully!");
+		} catch (err) {
+			console.log("Error adding comment: ", err);
+			toast.error("Something went wrong");
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	const handleDeleteComment = async (commentId: Id<"snippetComments">) => {
+		setDeletingCommentId(commentId);
+
+		try {
+			await deleteComment({ commentId });
+            toast.success("Comment deleted!")
+		} catch (err) {
+			console.log("Error deleting comment: ", err);
+			toast.error("Something went wrong");
+		} finally {
+			setDeletingCommentId(null);
+		}
+	};
 
 	return (
 		<div className="bg-[#121218] border border-[#ffffff0a] rounded-2xl overflow-hidden">
@@ -44,7 +59,10 @@ function Comments({ snippetId }: { snippetId: Id<"snippets"> }) {
 			</div>
 			<div className="p-6 sm:p-8">
 				{user ? (
-					<CommentForm onSubmit={handleSubmitComment} isSubmitting={isSubmitting}/>
+					<CommentForm
+						onSubmit={handleSubmitComment}
+						isSubmitting={isSubmitting}
+					/>
 				) : (
 					<div className="bg-[#0a0a0f] rounded-xl p-6 text-center mb-8 border border-[#ffffff0a]">
 						<p className="text-[#808086] mb-4">
@@ -57,6 +75,18 @@ function Comments({ snippetId }: { snippetId: Id<"snippets"> }) {
 						</SignInButton>
 					</div>
 				)}
+
+				<div className="space-y-6">
+					{comments.map((comment) => (
+						<Comment
+							key={comment._id}
+							comment={comment}
+							isDeleting={deletingCommentId === comment._id}
+							onDelete={handleDeleteComment}
+							currentUserId={user?.id}
+						/>
+					))}
+				</div>
 			</div>
 		</div>
 	);

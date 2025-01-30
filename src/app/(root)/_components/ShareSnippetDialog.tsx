@@ -4,7 +4,6 @@ import { useCodeEditorStore } from "@/store/useCodeEditorStore";
 import { X } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { createSnippet } from "../../../../convex/snippets";
 import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import toast from "react-hot-toast";

@@ -17,7 +17,7 @@ import { motion } from "framer-motion";
 interface ProfileHeaderProps {
 	userStats: {
 		totalExecutions: number;
-		languagesCount: number;
+		languagesCount?: number;
 		languages: string[];
 		last24Hours: number;
 		favoriteLanguage: string;
@@ -69,7 +69,7 @@ function ProfileHeader({ userStats, userData, user }: ProfileHeaderProps) {
 		},
 		{
 			label: "Languages User",
-			value: userStats.languagesCount ?? 0,
+			value: userStats?.languagesCount ?? 0,
 			icon: Code2,
 			color: "from-purple-500 to-pink-500",
 			gradient: "group-hover:via-purple-400",
